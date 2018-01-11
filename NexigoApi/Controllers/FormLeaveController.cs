@@ -324,5 +324,33 @@ namespace NexigoApi.Controllers
                 return Ok(new { success = false, message = ex.Message });
             }
         }
+        [HttpPost]
+        public ReadData ReportGrid([FromBody]ListLeaveRequest res)
+        {
+            using (var context = new LeaveRequestDataContext())
+            {                
+                    var query = from data in context.ListLeaveRequests
+                                select new ReadDB
+                                {
+                                    Name = data.Name,
+                                    Email = data.Email,
+                                    StartDate = data.StartDate,
+                                    EndDate = data.EndDate,
+                                    DaysLeave = data.DaysLeave,
+                                    LeaveType = data.LeaveType,
+                                    Submission = data.Submission,
+                                    status = data.status
+                                };
+
+                    ReadData getdata = new ReadData
+                    {
+                        data = query.ToList(),
+                        total = query.ToList().Count
+                    };
+
+                    return getdata;
+             
+            }
+        }
     }
 }
