@@ -1,4 +1,4 @@
-﻿var nowDate = new Date();
+var nowDate = new Date();
 var date = nowDate.getDate() + '/' + (nowDate.getMonth() + 1) + '/' +  nowDate.getFullYear();
 
 
@@ -73,6 +73,18 @@ nexigo.widget({
                             url: 'http://localhost:31602/api/FormLeave/ReadLeave',
                             method: 'POST'
                         },
+                        onChange: function (val, text) {
+                            if (val !== 'Local leave') {
+                                xg.populate({ DaysLeave: '1' });
+                                $('[xg-field="Days"]').hide();
+                                $('[xg-field="Days1"]').hide();
+                            } else {
+                                $('[xg-field="Days"]').show();
+                                $('[xg-field="Days1"]').show();
+                            }
+
+                        },
+
                         //data: [{
                         //    value: 'type1',
                         //    text: 'Marriage',
@@ -105,29 +117,71 @@ nexigo.widget({
                 type: 'fieldRow',
                 fields: [
                     {
-                        name: 'select_normal2',
+                        name: 'Days',
                         text: 'Days',
                         type: 'select',
                         required: true,
                         cols: 3,
+                        offset: 2,
                         placeholder: 'Please Select Day',
                         data: [{
-                            value: 'days1',
+                            value: 1,
                             text: '1 Day',
                         }, {
-                            value: 'days2',
+                            value: 0.5,
                             text: '0.5 Day',
                         }, {
-                            value: 'days3',
+                            value: 0.25,
                             text: '0.25 Day',
                         }
                         ],
                         onChange: function (val, text) {
-                            xg.call('Log', 'Value changed - ' + val + ' - ' + text);
+                        //    xg.call('Log', 'Value changed - ' + val + ' - ' + text);
                             var pengurangan = (Date.parse(xg.serialize().EndDate) - Date.parse(xg.serialize().StartDate)) / 24 / 60 / 60 / 1000;
-                            //console.log(pengurangan)
-                            xg.populate({ DaysLeave: pengurangan });
+                            if (pengurangan === 0) {
+                                $('[xg-field="Days1"]').hide();
+                                xg.populate({ DaysLeave: val });
+
+                            }
+                            
+                        },
+                    },
+                    {
+                        name: 'Days1',
+                        text: 'Days',
+                        type: 'select',
+                        required: true,
+                        cols: 3,
+                        offset: 2,
+                        placeholder: 'Please Select Day',
+                        data: [{
+                            value: 1,
+                            text: '1 Day',
+                        }, {
+                            value: 0.5,
+                            text: '0.5 Day',
+                        }, {
+                            value: 0.25,
+                            text: '0.25 Day',
                         }
+                        ],
+                        onChange: function (val, text) {
+                            var pengurangan = (Date.parse(xg.serialize().EndDate) - Date.parse(xg.serialize().StartDate)) / 24 / 60 / 60 / 1000;
+                            var hasil = 0;
+                            if (val === '1' && xg.serialize().Days === '1') {
+                                hasil = pengurangan + 1;
+                                xg.populate({ DaysLeave: hasil });
+                            } else if (val === '1' && xg.serialize().Days !== '1') {
+                                hasil = pengurangan + parseFloat(xg.serialize().Days)
+                                xg.populate({ DaysLeave: hasil });
+                            } else if (val !== '1' && xg.serialize().Days === '1') {
+                                hasil = pengurangan + parseFloat(val);
+                                xg.populate({ DaysLeave: hasil });
+                            } else {
+                                hasil = pengurangan + parseFloat(val) + parseFloat(xg.serialize().Days)-1;
+                                xg.populate({ DaysLeave: hasil });
+                            }
+                        },
                     },
                 ]
             },
