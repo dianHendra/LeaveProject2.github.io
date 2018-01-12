@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using NexigoApi.Models;
 using System;
 using System.Collections.Generic;
@@ -24,8 +24,14 @@ namespace NexigoApi.Controllers
         public string Category { get; set; }
         public string DocumentHolder { get; set; }
         public string Email { get; set; }
-
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public string DaysLeave { get; set; }
+        public string Submission { get; set; }
     }
+
     public class Leave
     {
         public string value { get; set; }
@@ -161,7 +167,6 @@ namespace NexigoApi.Controllers
                 leave.Submission = req.Submission;
                 leave.status = req.status;
                 leave.LeaveType = req.LeaveType;
-                leave.status = "pending";
 
 
                 dc.ListLeaveRequests.InsertOnSubmit(leave);
@@ -233,20 +238,34 @@ namespace NexigoApi.Controllers
                         parseResult = JObject.Parse(response);
 
                         //result = JsonConvert.DeserializeObject<List<dynamic>>(parseResult[0]);
-
+                        
                         foreach (var item in parseResult.data)
                         {
                             TaskListGrids task = new TaskListGrids();
                             string email = item.created_by.Email;
-                            task.Email = email;
+                            string pid = item.process_id;
+                            //task.Email = email;
                             task.CreatedDate = item.created_at.ToString("dd/MM/yyyy");
                             task.DocumentHolder = item.assignee.name;
-                            task.Position = context.Employees.Where(o => o.Email == email).Any() ? context.Employees.Where(o => o.Email == email).FirstOrDefault().Staff_Level : "Supervisor";
+                            task.Position = context.Employees.Where(o => o.Email == email).Any() ? context.Employees.Where(o => o.Email == email).FirstOrDefault().Staff_Level : "Spv";
                             task.ProcessId = item.process_id;
                             task.TaskId = item.id;
-                            task.SubmitterName = item.created_by.name;
-                            string pid = item.process_id;
+                            task.SubmitterName = item.created_by.name;                            
+                            task.Email = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().Email;
                             task.Category = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().LeaveType;
+                            task.ID = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().ID;
+                            task.Name = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().Name;
+                            task.StartDate = Convert.ToString(string.Format("{0:dd/MM/yyyy}", task.StartDate));
+                            var a = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().StartDate;
+                            task.StartDate = Convert.ToString(string.Format("{0:dd/MM/yyyy}", a));
+                            var b = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().EndDate;
+                            task.EndDate = Convert.ToString(string.Format("{0:dd/MM/yyyy}", b));
+                            var c = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().Submission;
+                            task.Submission = Convert.ToString(string.Format("{0:dd/MM/yyyy}", c));
+                            //task.StartDate = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().StartDate.ToString();
+                            //task.EndDate = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().EndDate.ToString();
+                            task.DaysLeave = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().DaysLeave.ToString();
+                            //task.Submissiion = context.ListLeaveRequests.Where(o => o.ProcessId == pid).FirstOrDefault().Submission.ToString();
                             grids.Add(task);
                         }
                     }
@@ -322,34 +341,6 @@ namespace NexigoApi.Controllers
             catch (Exception ex)
             {
                 return Ok(new { success = false, message = ex.Message });
-            }
-        }
-        [HttpPost]
-        public ReadData ReportGrid([FromBody]ListLeaveRequest res)
-        {
-            using (var context = new LeaveRequestDataContext())
-            {                
-                    var query = from data in context.ListLeaveRequests
-                                select new ReadDB
-                                {
-                                    Name = data.Name,
-                                    Email = data.Email,
-                                    StartDate = data.StartDate,
-                                    EndDate = data.EndDate,
-                                    DaysLeave = data.DaysLeave,
-                                    LeaveType = data.LeaveType,
-                                    Submission = data.Submission,
-                                    status = data.status
-                                };
-
-                    ReadData getdata = new ReadData
-                    {
-                        data = query.ToList(),
-                        total = query.ToList().Count
-                    };
-
-                    return getdata;
-             
             }
         }
     }
