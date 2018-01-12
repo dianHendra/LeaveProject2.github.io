@@ -1,4 +1,4 @@
-﻿nexigo.widget({
+nexigo.widget({
     text: 'List Requests',
     toolbars: [
 
@@ -41,12 +41,12 @@
                     {
                         type: 'fieldRow',
                         fields: [{
-                            name: 'LeaveType',
+                            name: 'Category',
                             text: 'LeaveType',
                             cols: 6,
                             readonly: true,
                         }, {
-                            name: 'Daysleave',
+                            name: 'DaysLeave',
                             text: 'DaysLeave',
                             cols: 6,
                             readonly: true,
@@ -98,7 +98,7 @@
                                 name: 'CreateDate',
                                 text: 'CreateDate',
                                 type: 'text'
-                            },                            
+                            },
                             {
                                 name: 'DocumentHolder',
                                 text: 'Document Holder',
@@ -138,38 +138,18 @@
     ],
     functions: {
 
-        doubleClick: function (row) {
-
-            $('.home').removeClass('hide');
-            $('.Approver').removeClass('hide');
-            $('.Report').removeClass('hide');
-
+        doubleClick: function (fieldRow) {
             //xg.loading.show();
-            console.log(row);
-            //xg.populate(row);
-            var data = xg.serialize();
-            window.ProcessID = row.ProcessID;
+            console.log(fieldRow);
+            xg.populate(fieldRow);          
             //xg.loading.hide();
-            var ProcessId = xg.grid.getSelectedRow('tasklist-grid')[0].ProcessId;
-            var ID = ProcessId.replace(/-/g, "").replace(/:/g, "");
-            $.get('http://localhost:31602/api/FormLeave/DataRequster?ID=' + ID, function (result) {
-                console.log(result);
-                var temp = JSON.parse(result);
-                if (result.success) {
-                    xg.populate({
-                        ID: temp.ID,
-                        Name: temp.User.Name,
-                        LeaveDate: temp.User.LeaveDate,
-                        StartDate: temp.User.StartDate,
-                        EndDate: temp.User.EndDate,
-                        DaysLeave: temp.User.DaysLeave,
-                        Submission: temp.User.Submission
-                    });
-                }
-            })
+            
         },
 
         init: function (xg, callback) {
+            $('.home').removeClass('hide');
+            $('.Approver').removeClass('hide');
+            $('.Report').removeClass('hide');
             if (window.ID) {
                 $.get('http://localhost:31602/api/FormLeave/GetTaskList?ID=' + window.ID, function (result) {
                     console.log(result);
